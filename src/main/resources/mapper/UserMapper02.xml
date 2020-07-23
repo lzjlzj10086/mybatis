@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.UserDao02">
+    <select id="findAll" resultType="user">
+        select * from user
+        <where>
+            <if test="id!=0 or id!=null">
+                and id = #{id}
+            </if>
+            <if test="userName != null">
+                and username = #{userName}
+            </if>
+        </where>
+    </select>
+    <select id="findAllByList" parameterType="java.util.List" resultType="user">
+        select * from user where id in
+        <foreach collection="list" close=")" open="(" item="id" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="findPageAll" resultType="user">
+        select *from user
+    </select>
+    <!--一对一-->
+    <resultMap id="orderOne" type="com.entity.Order">
+        <id column="id" property="id"></id>
+        <result column="total" property="total"></result>
+        <result column="date" property="date"></result>
+        <association property="user" javaType="com.entity.User">
+            <id column="uid" property="id"></id>
+            <result column="username" property="userName"></result>
+            <result column="password" property="passWord"></result>
+        </association>
+    </resultMap>
+    <select id="findOrder" resultMap="orderOne">
+        select * from orders o,user u where u.id = o.uid
+    </select>
+
+    <!--一对多-->
+    <resultMap id="orderMore" type="com.entity.User">
+        <id column="id" property="id"></id>
+        <result column="username" property="userName"></result>
+        <result column="password" property="passWord"></result>
+        <collection property="orderList" ofType="com.entity.Order">
+            <id column="oid" property="id"></id>
+            <result column="total" property="total"></result>
+            <result column="date" property="date"></result>
+        </collection>
+    </resultMap>
+    <select id="findOrderMore" resultMap="orderMore">
+        select *,o.id oid from user u left join orders o on u.id = o.uid
+    </select>
+    <!--多对多-->
+    <resultMap id="userandrole" type="com.entity.User">
+        <id column="id" property="id"></id>
+        <result column="username" property="userName"></result>
+        <result column="password" property="passWord"></result>
+        <collection property="roleList" ofType="com.entity.Role">
+            <id column="roleid" property="id"></id>
+            <result column="name" property="name"></result>
+        </collection>
+    </resultMap>
+    <select id="findOrderMoreAndMore" resultMap="userandrole">
+        select * from user u left join user_role ur on u.id = ur.userid left join role on role.id = ur.roleid
+    </select>
+</mapper>
